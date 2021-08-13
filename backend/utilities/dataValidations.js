@@ -15,3 +15,19 @@ module.exports.isValidString = (value) => {
   const isString = schema.validate(value);
   return isString;
 };
+
+module.exports.isValidObjectId = (value) => {
+  const schema = joi.object({
+    id: joi.objectId().required(),
+  });
+  const isValidData = schema.validate({ id: value });
+  return isValidData;
+};
+
+module.exports.isValidComment = (value) => {
+  const schema = joi.object( {text: joi.string().required()} );
+  const isString = schema.validate(value);
+  return isString;
+};
+
+
