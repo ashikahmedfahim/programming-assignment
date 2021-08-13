@@ -1,4 +1,5 @@
 const Post = require("../models/posts");
+const ObjectId = require("mongodb").ObjectId;
 const dataValidations = require("../utilities/dataValidations");
 const ExpressError = require("../utilities/expressError");
 
@@ -22,26 +23,31 @@ module.exports.addUpVote = async (req, res, next) => {
   if (isValidId.error) throw new ExpressError(400, "Invalid Post ID");
   let post = await Post.findById(req.params.id);
   if (!post) throw new ExpressError(404, "Post not found");
-  const findUserByDownVote = await Post.findOne({
-    _id: req.params.id,
-    downVote: { downVotedBy: [req.credentials._id] },
-  });
-  if (findUserByDownVote) {
-    await Post.updateOne(
-      { _id: req.params.id },
-      { $pull: { downVote: { downVotedBy: req.credentials._id } } }
-    );
+  if (post.downVote.length > 0) {
+    const findUserByDownVote = await Post.findOne({
+      _id: req.params.id,
+      "downVote.downVotedBy": req.credentials._id,
+    });
+    if (findUserByDownVote.length > 0) {
+      await Post.updateOne(
+        { _id: req.params.id },
+        { $pull: { downVote: { downVotedBy: req.credentials._id } } }
+      );
+    }
   }
-  const findUserByUpVote = await Post.findOne({
-    $and: [
-      {
-        _id: req.params.id,
-      },
-      { upVote: { upVotedBy: req.credentials._id } },
-    ],
-  });
-  console.log(findUserByUpVote);
-  if (!findUserByUpVote) {
+  if (post.upVote.length > 0) {
+    const findUserByUpVote = await Post.find({
+      _id: req.params.id,
+      "upVote.upVotedBy": req.credentials._id,
+    });
+    if (findUserByUpVote.length === 0) {
+      const result = await Post.updateOne(
+        { _id: req.params.id },
+        { $push: { upVote: { upVotedBy: req.credentials._id } } }
+      );
+      if (!result) throw new ExpressError(500, "Error updating post");
+    }
+  } else {
     const result = await Post.updateOne(
       { _id: req.params.id },
       { $push: { upVote: { upVotedBy: req.credentials._id } } }

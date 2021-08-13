@@ -37,7 +37,7 @@ app.use("/users/:id/posts", UserPost);
 app.use("*", (req, res, next) => {
   next(new ExpressError(404, "Page not found"));
 });
-
+ 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message = "Server Error" } = err;
   res.status(statusCode).json(message);

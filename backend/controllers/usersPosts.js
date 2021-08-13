@@ -14,7 +14,6 @@ module.exports.createOne = async (req, res, next) => {
   const isValidDescription = dataValidations.isValidString(req.body);
   if (isValidDescription.error) throw new ExpressError(400, isValidDescription.error.message);
   const description = req.body.description;
-  console.log(description);
   const newPost = new Post({ user, description });
   const result = await newPost.save();
   if (!result) throw new ExpressError(500, "Failed to create Post");

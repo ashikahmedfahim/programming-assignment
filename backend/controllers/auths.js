@@ -5,7 +5,6 @@ const dataValidations = require("../utilities/dataValidations");
 const ExpressError = require("../utilities/expressError");
 
 module.exports.login = async (req, res, next) => {
-  console.log(req.body);
   const isValidData = dataValidations.isValidUserData(req.body);
   if (isValidData.error) throw new ExpressError(400, isValidData.error.message);
   const isUser = await User.findOne({ email: req.body.email });
