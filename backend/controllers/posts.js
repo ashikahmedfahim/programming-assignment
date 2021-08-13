@@ -1,5 +1,4 @@
 const Post = require("../models/posts");
-const ObjectId = require("mongodb").ObjectId;
 const dataValidations = require("../utilities/dataValidations");
 const ExpressError = require("../utilities/expressError");
 
@@ -28,7 +27,7 @@ module.exports.addUpVote = async (req, res, next) => {
       _id: req.params.id,
       "downVote.downVotedBy": req.credentials._id,
     });
-    if (findUserByDownVote.length > 0) {
+    if (findUserByDownVote) {
       await Post.updateOne(
         { _id: req.params.id },
         { $pull: { downVote: { downVotedBy: req.credentials._id } } }
@@ -58,7 +57,45 @@ module.exports.addUpVote = async (req, res, next) => {
   res.status(200).json(post);
 };
 
-module.exports.addDownVote = async (req, res, next) => {};
+module.exports.addDownVote = async (req, res, next) => {
+  const isValidId = dataValidations.isValidObjectId(req.params.id);
+  if (isValidId.error) throw new ExpressError(400, "Invalid Post ID");
+  let post = await Post.findById(req.params.id);
+  if (!post) throw new ExpressError(404, "Post not found");
+  if (post.upVote.length > 0) {
+    const findUserByUpVote = await Post.findOne({
+      _id: req.params.id,
+      "upVote.upVotedBy": req.credentials._id,
+    });
+    if (findUserByUpVote) {
+      await Post.updateOne(
+        { _id: req.params.id },
+        { $pull: { upVote: { upVotedBy: req.credentials._id } } }
+      );
+    }
+  }
+  if (post.downVote.length > 0) {
+    const findUserByDownVote = await Post.find({
+      _id: req.params.id,
+      "downVote.downVotedBy": req.credentials._id,
+    });
+    if (findUserByDownVote.length === 0) {
+      const result = await Post.updateOne(
+        { _id: req.params.id },
+        { $push: { downVote: { downVotedBy: req.credentials._id } } }
+      );
+      if (!result) throw new ExpressError(500, "Error updating post");
+    }
+  } else {
+    const result = await Post.updateOne(
+      { _id: req.params.id },
+      { $push: { downVote: { downVotedBy: req.credentials._id } } }
+    );
+    if (!result) throw new ExpressError(500, "Error updating post");
+  }
+  post = await Post.findById(req.params.id);
+  res.status(200).json(post);
+};
 
 module.exports.addComment = async (req, res, next) => {
   const isValidId = dataValidations.isValidObjectId(req.params.id);
