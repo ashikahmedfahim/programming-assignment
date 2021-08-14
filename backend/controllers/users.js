@@ -24,7 +24,10 @@ module.exports.createOne = async (req, res, next) => {
     { _id: result._id, email: result.email },
     process.env.SECRETKEY
   );
-  res.status(200).header("token", token).json({ token });
+  res
+    .status(200)
+    .header("token", token)
+    .json({ id: result._id, email: result.email, token });
 };
 
 module.exports.getOne = async (req, res, next) => {

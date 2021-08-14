@@ -4,7 +4,7 @@ const catchAsync = require("../utilities/catchAsync");
 const UserPost = require("../controllers/usersPosts");
 const { isAuthenticated, isAuthorized } = require("../middlewares/index");
 
-router.get("/", catchAsync(UserPost.getAll));
+router.get("/", isAuthenticated, isAuthorized,catchAsync(UserPost.getAll));
 router.post("/", isAuthenticated, isAuthorized, catchAsync(UserPost.createOne));
 router.get("/:pid", isAuthenticated, isAuthorized, catchAsync(UserPost.getOne));
 router.put("/:pid", catchAsync(UserPost.updateOne));

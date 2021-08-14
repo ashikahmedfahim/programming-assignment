@@ -3,7 +3,7 @@ const dataValidations = require("../utilities/dataValidations");
 const ExpressError = require("../utilities/expressError");
 
 module.exports.getAll = async (req, res, next) => {
-  const posts = await Post.find({});
+  const posts = await Post.find({}).populate("user", "email");
   res.status(200).json(posts);
 };
 
@@ -12,7 +12,11 @@ module.exports.createOne = async (req, res, next) => {};
 module.exports.getOne = async (req, res, next) => {
   const isValidId = dataValidations.isValidObjectId(req.params.id);
   if (isValidId.error) throw new ExpressError(400, "Invalid Post ID");
-  const result = await Post.findById(req.params.id);
+  const result = await Post.findById(req.params.id)
+    .populate("user", "email")
+    .populate("comment.commentBy", "email")
+    .populate("upVote.upVotedBy", "email")
+    .populate("downVote.downVoteBy", "email");
   if (!result) throw new ExpressError("Post not found", 404);
   res.status(200).json(result);
 };
@@ -53,7 +57,11 @@ module.exports.addUpVote = async (req, res, next) => {
     );
     if (!result) throw new ExpressError(500, "Error updating post");
   }
-  post = await Post.findById(req.params.id);
+  post = await Post.findById(req.params.id)
+    .populate("user", "email")
+    .populate("comment.commentBy", "email")
+    .populate("upVote.upVotedBy", "email")
+    .populate("downVote.downVoteBy", "email");
   res.status(200).json(post);
 };
 
@@ -93,7 +101,11 @@ module.exports.addDownVote = async (req, res, next) => {
     );
     if (!result) throw new ExpressError(500, "Error updating post");
   }
-  post = await Post.findById(req.params.id);
+  post = await Post.findById(req.params.id)
+  .populate("user", "email")
+  .populate("comment.commentBy", "email")
+  .populate("upVote.upVotedBy", "email")
+  .populate("downVote.downVoteBy", "email");
   res.status(200).json(post);
 };
 
@@ -111,7 +123,11 @@ module.exports.addComment = async (req, res, next) => {
     { _id: req.params.id },
     { $push: { comment: comment } },
     { new: true }
-  );
+  )
+  .populate("user", "email")
+  .populate("comment.commentBy", "email")
+  .populate("upVote.upVotedBy", "email")
+  .populate("downVote.downVoteBy", "email");
   if (!result) throw new ExpressError(500, "Error updating post");
   res.status(200).json(result);
 };

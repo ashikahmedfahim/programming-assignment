@@ -18,7 +18,10 @@ module.exports.login = async (req, res, next) => {
         { _id: isUser._id, email: isUser.email },
         process.env.SECRETKEY
       );
-      res.status(200).header("token",token).json({ token });
+      res
+        .status(200)
+        .header("token", token)
+        .json({ id: isUser._id, email: isUser.email, token: token });
     } else {
       res.status(400).json({ message: "Invalid credentials" });
     }
