@@ -1,10 +1,18 @@
 open the project folder then open a terminal type:
+
 cd fronetend
+
 npm install
+
 npm start
+
+
 open another terminal while in the main project folder
+
 cd backend
+
 npm install
+
 node index
 
 now the project is up and running 
